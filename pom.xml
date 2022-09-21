@@ -22,12 +22,22 @@
     </properties>
 
     <dependencies>
+        <!--knife4j是为Java MVC框架继承Swagger生成Api文档的增强解决方案-->
         <dependency>
-            <groupId>org.apache.shardingsphere</groupId>
-            <artifactId>sharding-jdbc-spring-boot-starter</artifactId>
-            <version>4.0.0-RC1</version>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <version>3.0.2</version>
         </dependency>
 
+<!--            没有实际实现分库读写操作此处依赖暂时不引入，否则会出现数据源重复的错误，我也不知道为什么...-->
+<!--        &lt;!&ndash;shardingsphere分库——读写分离&ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.shardingsphere</groupId>-->
+<!--            <artifactId>sharding-jdbc-spring-boot-starter</artifactId>-->
+<!--            <version>4.0.0-RC1</version>-->
+<!--        </dependency>-->
+
+        <!--cache缓存框架依赖-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
