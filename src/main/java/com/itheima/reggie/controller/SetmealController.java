@@ -41,7 +41,6 @@ public class SetmealController {
 
     /**
      * 新增套餐
-     *
      * @param setmealDto
      * @return
      */
@@ -58,7 +57,6 @@ public class SetmealController {
 
     /**
      * 套餐分页查询
-     *
      * @param page
      * @param pageSize
      * @param name
@@ -67,9 +65,9 @@ public class SetmealController {
     @GetMapping("/page")
     @ApiOperation(value = "套餐分页查询接口")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "page", value = "页码", required = true),
-            @ApiImplicitParam(name = "pageSize", value = "每页记录数", required = true),
-            @ApiImplicitParam(name = "name", value = "套餐名称", required = false)
+        @ApiImplicitParam(name = "page", value = "页码", required = true),
+        @ApiImplicitParam(name = "pageSize", value = "每页记录数", required = true),
+        @ApiImplicitParam(name = "name", value = "套餐名称", required = false)
     })
     public R<Page> page(int page, int pageSize, String name) {
         //分页构造器对象
@@ -112,7 +110,6 @@ public class SetmealController {
 
     /**
      * 删除套餐
-     *
      * @param ids
      * @return
      */
@@ -136,31 +133,37 @@ public class SetmealController {
     @PostMapping("/status/{status}")
     //停售请求路径为：http://localhost:8080/setmeal/status/0?ids=156716415,141558011
     //启售请求路径为：http://localhost:8080/setmeal/status/1?ids=156716415,141558011
+    @ApiOperation(value = "批量启售停售")
     public R<String> updateStatusById(@PathVariable Integer status, Long[] ids){
         log.info("根据id修改菜品的装填：{}, id为{}", status, ids);
+        int flag = 0;
 
         for(Long id : ids){
             Setmeal setmeal =  setmealService.getById(id);
             log.info("套餐：{}", setmeal);
             setmeal.setStatus(status);
+            flag = setmeal.getStatus();
             setmealService.updateById(setmeal);
         }
 
-        return R.success("套餐停售成功");
+        if (flag == 0){
+            return R.success("套餐停售成功");
+        }
+        return R.success("套餐启售成功");
     }
 
     /**
-     * 根据条件查询套餐数据
+     * 查询相应套餐列表数据
      * @param setmeal
      * @return
      */
     @GetMapping("/list")
     @Cacheable(value = "setmealCache", key = "#setmeal.categoryId + '_' + #setmeal.status")
-    @ApiOperation(value = "套餐条件查询接口")
+    @ApiOperation(value = "套餐列表查询接口")
     public R<List<Setmeal>> list(Setmeal setmeal){
         LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(setmeal.getCategoryId() != null,Setmeal::getCategoryId,setmeal.getCategoryId());
-        queryWrapper.eq(setmeal.getStatus() != null,Setmeal::getStatus,setmeal.getStatus());
+        queryWrapper.eq(setmeal.getCategoryId() != null, Setmeal::getCategoryId, setmeal.getCategoryId());
+        queryWrapper.eq(setmeal.getStatus() != null, Setmeal::getStatus, setmeal.getStatus());
         queryWrapper.orderByDesc(Setmeal::getUpdateTime);
 
         List<Setmeal> list = setmealService.list(queryWrapper);

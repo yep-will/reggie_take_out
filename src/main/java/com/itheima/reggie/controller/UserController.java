@@ -6,6 +6,8 @@ import com.itheima.reggie.entity.User;
 import com.itheima.reggie.service.UserService;
 import com.itheima.reggie.utils.SMSUtils;
 import com.itheima.reggie.utils.ValidateCodeUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/user")
 @Slf4j
+@Api(tags = "用户通用接口")
 public class UserController {
 
     @Autowired
@@ -35,6 +38,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/sendMsg")
+    @ApiOperation(value = "发送手机短信验证码接口")
     public R<String> sendMsg(@RequestBody User user, HttpSession session){
         //获取手机号
         String phone = user.getPhone();
@@ -67,6 +71,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
+    @ApiOperation(value = "移动端用户登录接口")
     public R<User> login(@RequestBody Map map, HttpSession session){
         log.info(map.toString());
 

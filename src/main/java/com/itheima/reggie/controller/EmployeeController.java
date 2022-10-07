@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itheima.reggie.common.R;
 import com.itheima.reggie.entity.Employee;
 import com.itheima.reggie.service.EmployeeService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 @RestController
 @RequestMapping("/employee")
+@Api(tags = "员工管理接口")
 public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
@@ -26,6 +29,7 @@ public class EmployeeController {
      * @return
      */
     @PostMapping("/login")
+    @ApiOperation(value = "员工登录接口")
     public R<Employee> login(HttpServletRequest request, @RequestBody Employee employee){
         //1.将页面提交的密码password进行MD5加密处理
         String password = employee.getPassword();
@@ -62,6 +66,7 @@ public class EmployeeController {
      * @return
      */
     @PostMapping("/logout")
+    @ApiOperation(value = "员工登出接口")
     public R<String> logout(HttpServletRequest request){
         //清理Session中保存的当前登录员工的id
         request.getSession().removeAttribute("employee");
@@ -74,6 +79,7 @@ public class EmployeeController {
      * @return
      */
     @PostMapping
+    @ApiOperation(value = "新增员工接口")
     public R<String> save(HttpServletRequest request, @RequestBody Employee employee){
         log.info("新增员工，员工信息：{}", employee.toString());
 
@@ -99,6 +105,7 @@ public class EmployeeController {
      * @return
      */
     @GetMapping("/page")
+    @ApiOperation(value = "员工信息分页查询接口")
     public R<Page> page(int page, int pageSize, String name){
         log.info("page = {}, pageSize = {}, name = {}", page, pageSize, name);
 
@@ -122,12 +129,12 @@ public class EmployeeController {
 
     /**
      * 根据id修改员工信息  --> 这里的修改方法是通用的
-     * @param request
      * @param employee
      * @return
      */
     @PutMapping
-    public R<String> update(HttpServletRequest request, @RequestBody Employee employee){
+    @ApiOperation(value = "修改员工信息接口")
+    public R<String> update(@RequestBody Employee employee){
         log.info(employee.toString());
 
 //        Long empId = (Long) request.getSession().getAttribute("employee");
@@ -144,6 +151,7 @@ public class EmployeeController {
      * @return
      */
     @GetMapping("/{id}")
+    @ApiOperation(value = "id查询员工信息接口")
     public R<Employee> getById(@PathVariable Long id){
         log.info("根据id查询员工信息...");
         Employee employee = employeeService.getById(id);

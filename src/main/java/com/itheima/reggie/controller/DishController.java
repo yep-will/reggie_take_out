@@ -10,6 +10,10 @@ import com.itheima.reggie.entity.DishFlavor;
 import com.itheima.reggie.service.CategoryService;
 import com.itheima.reggie.service.DishFlavorService;
 import com.itheima.reggie.service.DishService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +31,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/dish")
 @Slf4j
+@Api(tags = "菜品管理接口")
 public class DishController {
     @Autowired
     private DishService dishService;
@@ -47,6 +52,7 @@ public class DishController {
      * @return
      */
     @PostMapping
+    @ApiOperation(value = "新增菜品接口")
     public R<String> save(@RequestBody DishDto dishDto) {
         log.info(dishDto.toString());
 
@@ -72,6 +78,12 @@ public class DishController {
      * @return
      */
     @GetMapping("/page")
+    @ApiOperation(value = "菜品信息分页查询接口")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "page", value = "页码", required = true),
+        @ApiImplicitParam(name = "pageSize", value = "每页记录数", required = true),
+        @ApiImplicitParam(name = "name", value = "菜品名称", required = false)
+    })
     public R<Page> page(int page, int pageSize, String name) {
         //构造分页构造器对象
         Page<Dish> pageInfo = new Page<>(page, pageSize);
@@ -118,6 +130,7 @@ public class DishController {
      * @return
      */
     @GetMapping("/{id}")
+    @ApiOperation(value = "菜品信息id查询接口")
     public R<DishDto> get(@PathVariable Long id) {
         DishDto dishDto = dishService.getByIdWithFlavor(id);
         return R.success(dishDto);
@@ -130,6 +143,7 @@ public class DishController {
      * @return
      */
     @PutMapping
+    @ApiOperation(value = "菜品信息修改接口")
     public R<String> update(@RequestBody DishDto dishDto) {
         log.info(dishDto.toString());
 
@@ -168,6 +182,7 @@ public class DishController {
 //        return R.success(list);
 //    }
     @GetMapping("/list")
+    @ApiOperation(value = "菜品数据查询接口")
     public R<List<DishDto>> list(Dish dish) {
         List<DishDto> dishDtoList = null;
 
@@ -221,8 +236,6 @@ public class DishController {
 
         return R.success(dishDtoList);
     }
-
-
 }
 
 
