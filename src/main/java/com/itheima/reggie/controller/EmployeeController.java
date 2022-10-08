@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -162,6 +163,20 @@ public class EmployeeController {
     }
 
 
+    /**
+     * （批量）删除员工-----------------------------------------（未测试，俺也不知道哪里用到了）
+     * @param ids
+     * @return
+     */
+    @DeleteMapping
+    @ApiOperation(value = "删除员工")
+    public R<String> delete(@RequestParam List<Long> ids){
+        log.info("ids: {}", ids);
+
+        employeeService.removeByIds(ids);
+
+        return R.success("员工删除成功...");
+    }
 
 
 }
