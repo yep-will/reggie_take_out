@@ -197,6 +197,20 @@ public class EmployeeController {
         return R.success(list);
     }
 
+    /**
+     * 员工修改密码-----------------------------------------（未测试，俺也不知道哪里用到了）
+     * @param employee
+     * @return
+     */
+    @PutMapping("/updatePassword")
+    @ApiOperation(value = "员工修改密码")
+    public R<String> updatePassword(@RequestBody Employee employee){
+        log.info("修改密码，员工信息：{}", employee.toString());
+
+        employeeService.updateById(employee);
+
+        return R.success("修改密码成功");
+    }
 }
 
 
