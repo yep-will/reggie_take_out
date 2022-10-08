@@ -125,4 +125,22 @@ public class AddressBookController {
 
         return R.success("地址修改成功");
     }
+
+    /**
+     * 地址信息删除
+     * @param ids
+     * @return
+     */
+    @DeleteMapping
+    @ApiOperation(value = "地址信息删除")
+    public R<String> delete(@RequestParam Long[] ids){
+        log.info("删除的地址id为：{}", ids);
+
+        LambdaQueryWrapper<AddressBook> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(AddressBook::getId, ids);
+
+        addressBookService.remove(queryWrapper);
+
+        return R.success("删除成功");
+    }
 }

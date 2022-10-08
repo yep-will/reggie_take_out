@@ -135,7 +135,7 @@ public class SetmealController {
     //启售请求路径为：http://localhost:8080/setmeal/status/1?ids=156716415,141558011
     @ApiOperation(value = "批量启售停售")
     public R<String> updateStatusById(@PathVariable Integer status, Long[] ids){
-        log.info("根据id修改菜品的装填：{}, id为{}", status, ids);
+        log.info("根据id修改套餐的启售：{}, id为{}", status, ids);
         int flag = 0;
 
         for(Long id : ids){
