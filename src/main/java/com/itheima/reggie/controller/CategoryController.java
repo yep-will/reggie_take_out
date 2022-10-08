@@ -111,8 +111,21 @@ public class CategoryController {
         List<Category> list = categoryService.list(queryWrapper);
 
         return R.success(list);
-
     }
+
+    /**
+     * 根据id查询分类数据------------------------------------------（未测试，俺也不知道哪里用到了）
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    @ApiOperation(value = "根据id查询分类数据")
+    public R<Category> getById(@PathVariable Long id){
+        log.info(Long.toString(id));
+        Category category = categoryService.getById(id);
+        return R.success(category);
+    }
+
 }
 
 
