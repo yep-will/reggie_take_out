@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itheima.reggie.common.R;
 import com.itheima.reggie.entity.Employee;
+import com.itheima.reggie.entity.Setmeal;
 import com.itheima.reggie.service.EmployeeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -178,6 +179,23 @@ public class EmployeeController {
         return R.success("员工删除成功...");
     }
 
+    /**
+     * 查询员工列表数据-----------------------------------------（未测试，俺也不知道哪里用到了）
+     * @param employee
+     * @return
+     */
+    @GetMapping("/list")
+    @ApiOperation(value = "员工列表查询接口")
+    public R<List<Employee>> list(Employee employee){
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(employee.getId() != null, Employee::getUpdateTime, employee.getId());
+        queryWrapper.eq(employee.getStatus() != null, Employee::getStatus, employee.getStatus());
+        queryWrapper.orderByDesc(Employee::getUpdateTime);
+
+        List<Employee> list = employeeService.list(queryWrapper);
+
+        return R.success(list);
+    }
 
 }
 
