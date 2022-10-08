@@ -110,4 +110,19 @@ public class AddressBookController {
         //SQL:select * from address_book where user_id = ? order by update_time desc
         return R.success(addressBookService.list(queryWrapper));
     }
+
+    /**
+     * 地址信息修改
+     * @param addressBook
+     * @return
+     */
+    @PutMapping
+    @ApiOperation(value = "地址信息修改接口")
+    public R<String> update(@RequestBody AddressBook addressBook){
+        log.info(addressBook.toString());
+
+        addressBookService.updateById(addressBook);
+
+        return R.success("地址修改成功");
+    }
 }
