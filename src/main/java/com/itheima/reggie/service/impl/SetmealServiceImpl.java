@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,6 +72,19 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
 
         //再删除关系表中的数据  setmeal_dish
         setmealDishService.remove(lambdaQueryWrapper);
+    }
+
+    /**
+     * 更新套餐，同时需要更新套餐和菜品的关联数据
+     * @param setmealDto
+     */
+    @Override
+    @Transactional
+    public void updateWithDish(SetmealDto setmealDto){
+        List<Long> list = new ArrayList<>();
+        list.add(setmealDto.getId());
+        this.removeWithDish(list);
+        this.saveWithDish(setmealDto);
     }
 }
 

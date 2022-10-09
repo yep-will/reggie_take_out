@@ -186,10 +186,7 @@ public class SetmealController {
     public R<String> update(@RequestBody SetmealDto setmealDto){
         log.info("套餐信息：{}", setmealDto);
 
-        List<Long> list = new ArrayList<>();
-        list.add(setmealDto.getId());
-        setmealService.removeWithDish(list);
-        setmealService.saveWithDish(setmealDto);
+       setmealService.updateWithDish(setmealDto);
 
         return R.success("套餐修改成功");
     }
