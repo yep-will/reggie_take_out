@@ -279,6 +279,33 @@ public class DishController {
 
         return R.success("菜品数据删除成功");
     }
+
+    /**
+     * 菜品批量启售停售
+     * @param status
+     * @param ids
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation(value = "批量启售停售")
+    public R<String> updateStatusById(@PathVariable Integer status, Long[] ids){
+        log.info("根据id修改菜品的启售停售：{}, id为{}", status, ids);
+        int flag = 0;
+
+        for(Long id : ids){
+            Dish dish =  dishService.getById(id);
+            log.info("套餐：{}", dish);
+            dish.setStatus(status);
+            flag = dish.getStatus();
+            dishService.updateById(dish);
+        }
+
+        if (flag == 0){
+            return R.success("菜品停售成功");
+        }
+        return R.success("菜品启售成功");
+    }
+
 }
 
 
