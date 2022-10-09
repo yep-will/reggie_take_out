@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -143,4 +144,41 @@ public class AddressBookController {
 
         return R.success("删除成功");
     }
+
+    /**
+     * 查询最后更新地址-----------------------------------------（未编码，俺也不知道哪里用到了）
+     * @return
+     */
+    @GetMapping("/lastUpdate")
+    @ApiOperation(value = "查询最后更新地址接口")
+    public R<String> lastUpdate(){
+        return R.success("该接口待完善");
+    }
+
+    /**
+     * 地址分页-----------------------------------------（未测试，俺也不知道哪里用到了）
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    @GetMapping("/page")
+    @ApiOperation(value = "地址分页接口")
+    public R<Page> page(int page, int pageSize){
+        log.info("page = {}, pageSize = {}, name = {}", page, pageSize);
+
+        //构造分页构造器
+        Page pageInfo = new Page(page, pageSize);
+
+        //构造条件构造器
+        LambdaQueryWrapper<AddressBook> queryWrapper = new LambdaQueryWrapper();
+
+        //添加排序条件
+        queryWrapper.orderByDesc(AddressBook::getUpdateTime);
+
+        //执行查询
+        addressBookService.page(pageInfo, queryWrapper);
+
+        return R.success(pageInfo);
+    }
+
 }
