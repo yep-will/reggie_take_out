@@ -60,7 +60,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         int count = this.count(queryWrapper);
         if (count > 0){
             //如果不能删除，抛出一个业务异常
-            throw new CustomException("套餐正在售卖中，无法删除");
+            throw new CustomException("套餐正在售卖中，请先停售");
         }
 
         //如果可以删除，先删除套餐中的数据--setmeal

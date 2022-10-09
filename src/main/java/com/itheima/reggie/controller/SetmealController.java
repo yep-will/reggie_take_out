@@ -6,6 +6,7 @@ import com.itheima.reggie.common.R;
 import com.itheima.reggie.dto.SetmealDto;
 import com.itheima.reggie.entity.Category;
 import com.itheima.reggie.entity.Setmeal;
+import com.itheima.reggie.entity.SetmealDish;
 import com.itheima.reggie.service.CategoryService;
 import com.itheima.reggie.service.SetmealDishService;
 import com.itheima.reggie.service.SetmealService;
@@ -13,12 +14,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,7 +50,7 @@ public class SetmealController {
      * @return
      */
     @PostMapping
-    @CacheEvict(value = "setmealCache", allEntries = true)   //删除所有setmealCache分类下的所有数据
+    //@CacheEvict(value = "setmealCache", allEntries = true)   //删除所有setmealCache分类下的所有数据
     @ApiOperation(value = "新增套餐接口")
     public R<String> save(@RequestBody SetmealDto setmealDto) {
         log.info("套餐信息：{}", setmealDto);
@@ -114,7 +119,7 @@ public class SetmealController {
      * @return
      */
     @DeleteMapping
-    @CacheEvict(value = "setmealCache", allEntries = true)   //删除所有setmealCache分类下的所有数据
+    //@CacheEvict(value = "setmealCache", allEntries = true)   //删除所有setmealCache分类下的所有数据
     @ApiOperation(value = "套餐删除接口")
     public R<String> delete(@RequestParam List<Long> ids) {
         log.info("ids: {}", ids);
@@ -158,7 +163,7 @@ public class SetmealController {
      * @return
      */
     @GetMapping("/list")
-    @Cacheable(value = "setmealCache", key = "#setmeal.categoryId + '_' + #setmeal.status")
+    //@Cacheable(value = "setmealCache", key = "#setmeal.categoryId + '_' + #setmeal.status")
     @ApiOperation(value = "套餐列表查询接口")
     public R<List<Setmeal>> list(Setmeal setmeal){
         LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
@@ -169,5 +174,51 @@ public class SetmealController {
         List<Setmeal> list = setmealService.list(queryWrapper);
 
         return R.success(list);
+    }
+
+    /**
+     * 套餐修改接口
+     * @param setmealDto
+     * @return
+     */
+    @PutMapping
+    @ApiOperation(value = "套餐修改接口")
+    public R<String> update(@RequestBody SetmealDto setmealDto){
+        log.info("套餐信息：{}", setmealDto);
+
+        List<Long> list = new ArrayList<>();
+        list.add(setmealDto.getId());
+        setmealService.removeWithDish(list);
+        setmealService.saveWithDish(setmealDto);
+
+        return R.success("套餐修改成功");
+    }
+
+    /**
+     * 套餐查询接口
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    @ApiOperation(value = "套餐查询接口")
+    public R<SetmealDto> getById(@PathVariable Long id){
+        log.info("根据id查询套餐信息...{}", id);
+
+        Setmeal setmeal = setmealService.getById(id);
+
+        SetmealDto setmealDto = new SetmealDto();
+
+        //对象拷贝:records数据不拷贝，而且泛型不一致也无法拷贝数据
+        BeanUtils.copyProperties(setmeal, setmealDto);
+
+        //构造查询条件：查找套餐id下对应的菜品
+        LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SetmealDish::getSetmealId, id);
+        List<SetmealDish> setmealDishes = setmealDishService.list(queryWrapper);
+
+        //菜品装填
+        setmealDto.setSetmealDishes(setmealDishes);
+
+        return R.success(setmealDto);
     }
 }

@@ -155,7 +155,7 @@ public class EmployeeController {
     @GetMapping("/{id}")
     @ApiOperation(value = "id查询员工信息接口")
     public R<Employee> getById(@PathVariable Long id){
-        log.info("根据id查询员工信息...");
+        log.info("根据id查询员工信息...{}", id);
         Employee employee = employeeService.getById(id);
         if (employee != null){
             return R.success(employee);
