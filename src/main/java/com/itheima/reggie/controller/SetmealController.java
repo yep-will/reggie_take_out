@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itheima.reggie.common.R;
 import com.itheima.reggie.dto.SetmealDto;
 import com.itheima.reggie.entity.Category;
+import com.itheima.reggie.entity.Dish;
 import com.itheima.reggie.entity.Setmeal;
 import com.itheima.reggie.entity.SetmealDish;
 import com.itheima.reggie.service.CategoryService;
@@ -218,4 +219,16 @@ public class SetmealController {
 
         return R.success(setmealDto);
     }
+
+    /**
+     * 套餐查询全部菜品接口-----------------------------------------（未编码，俺也不知道哪里用到了）
+     * @param id
+     * @return
+     */
+    @GetMapping("/dish/{id}")
+    @ApiOperation(value = "套餐查询全部菜品")
+    public R<List<Dish>> findAllDish(@PathVariable Long id){
+        return null;
+    }
+
 }
