@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -39,11 +41,11 @@ public class UserController {
      */
     @PostMapping("/sendMsg")
     @ApiOperation(value = "发送手机短信验证码接口")
-    public R<String> sendMsg(@RequestBody User user, HttpSession session){
+    public R<String> sendMsg(@RequestBody User user, HttpSession session) {
         //获取手机号
         String phone = user.getPhone();
 
-        if(StringUtils.isNotEmpty(phone)){
+        if (StringUtils.isNotEmpty(phone)) {
             //生成随机的4位验证码
             //String code = ValidateCodeUtils.generateValidateCode(4).toString();
             String code = "1111"; //修改代码便于调试
@@ -72,7 +74,7 @@ public class UserController {
      */
     @PostMapping("/login")
     @ApiOperation(value = "移动端用户登录接口")
-    public R<User> login(@RequestBody Map map, HttpSession session){
+    public R<User> login(@RequestBody Map map, HttpSession session) {
         log.info(map.toString());
 
         //获取手机号
@@ -88,13 +90,13 @@ public class UserController {
         Object codeInSession = redisTemplate.opsForValue().get(phone);
 
         //进行验证码的比对（页面提交的验证码和Session中保存的验证码比对）
-        if(codeInSession != null && codeInSession.equals(code)){
+        if (codeInSession != null && codeInSession.equals(code)) {
             //如果能够比对成功，说明登录成功
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(User::getPhone, phone);
 
             User user = userService.getOne(queryWrapper);
-            if(user == null){
+            if (user == null) {
                 //判断当前手机号对应的用户是否为新用户，如果是新用户就自动完成注册
                 user = new User();
                 user.setPhone(phone);
@@ -111,4 +113,17 @@ public class UserController {
         return R.error("登录失败");
     }
 
+
+    /**
+     * 移动端用户登出
+     * @param httpSession
+     * @return
+     */
+    @PostMapping("/loginout")
+    @ApiOperation(value = "移动端用户登出接口")
+    public R<String> loginout(HttpSession httpSession) {
+        //清理Session保存的当前登录员工的id、
+        httpSession.removeAttribute("user");
+        return R.success("退出成功");
+    }
 }
