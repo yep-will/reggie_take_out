@@ -4,12 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itheima.reggie.common.R;
 import com.itheima.reggie.dto.DishDto;
-import com.itheima.reggie.entity.Category;
-import com.itheima.reggie.entity.Dish;
-import com.itheima.reggie.entity.DishFlavor;
-import com.itheima.reggie.service.CategoryService;
-import com.itheima.reggie.service.DishFlavorService;
-import com.itheima.reggie.service.DishService;
+import com.itheima.reggie.entity.*;
+import com.itheima.reggie.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -20,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +43,12 @@ public class DishController {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private SetmealDishService setmealDishService;
+
+    @Autowired
+    private SetmealService setmealService;
+
     /**
      * 新增菜品
      *
@@ -63,7 +67,7 @@ public class DishController {
         //redisTemplate.delete(keys);
 
         //清理某个分类下面的菜品缓存数据
-        String key = "dish_" + dishDto.getCategoryId() + "_1";
+        String key = "dish_" + dishDto.getCategoryId();
         redisTemplate.delete(key);
 
         return R.success("新增菜品成功...");
@@ -125,7 +129,6 @@ public class DishController {
 
     /**
      * 根据id查询菜品信息和对应的口味信息
-     *
      * @param id
      * @return
      */
@@ -154,7 +157,7 @@ public class DishController {
         //redisTemplate.delete(keys);
 
         //清理某个分类下面的菜品缓存数据
-        String key = "dish_" + dishDto.getCategoryId() + "_1";
+        String key = "dish_" + dishDto.getCategoryId();
         redisTemplate.delete(key);
 
         return R.success("修改菜品成功...");
@@ -187,7 +190,7 @@ public class DishController {
         List<DishDto> dishDtoList = null;
 
         //动态构造key
-        String key = "dish_" + dish.getCategoryId() + "_" + dish.getStatus();
+        String key = "dish_" + dish.getCategoryId();
         //先从redis中获取缓存数据
         dishDtoList = (List<DishDto>) redisTemplate.opsForValue().get(key);
 
@@ -235,6 +238,46 @@ public class DishController {
         redisTemplate.opsForValue().set(key, dishDtoList, 60, TimeUnit.MINUTES);
 
         return R.success(dishDtoList);
+    }
+
+    /**
+     * 菜品删除（同时删除redis中相应的套餐数据），删除前需要检查套餐中是否含有相应菜品数据
+     * @param ids
+     * @return
+     */
+    @DeleteMapping
+    @ApiOperation(value = "菜品删除接口")
+    public R<String> delete(@RequestParam List<Long> ids) {
+        log.info("ids: {}", ids);
+
+        //先在套餐中查询是否有相应的菜品，如果有则提示先将套餐中的菜品删除
+        //获取不符合条件菜品对应的套餐菜品关联数据
+        LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.in(SetmealDish::getDishId, ids);
+        List<SetmealDish> list = setmealDishService.list(queryWrapper);
+        if (list.size() > 0){
+            //获取套餐信息
+            Setmeal setmeal = setmealService.getById(list.get(0).getSetmealId());
+            return R.error("删除失败， " + setmeal.getName() + " 套餐中含有菜品:"+ list.get(0).getName() + "， 请先在套餐中移除该菜品");
+        }
+
+        //在redis中删除相应菜品对应分类数据
+        LambdaQueryWrapper<Dish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(Dish::getId, ids);
+        List<Dish> dishList = dishService.list(lambdaQueryWrapper);
+        Set<Long> categorySet = new HashSet<>();
+        for (Dish dish : dishList){
+            categorySet.add(dish.getCategoryId());
+        }
+        for (Long categoryId : categorySet){
+            String key = "dish_" + categoryId;
+            redisTemplate.delete(key);
+        }
+
+        //菜品删除操作
+        dishService.removeByIds(ids);
+
+        return R.success("菜品数据删除成功");
     }
 }
 
