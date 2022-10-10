@@ -9,6 +9,7 @@ import com.itheima.reggie.entity.Dish;
 import com.itheima.reggie.entity.Setmeal;
 import com.itheima.reggie.entity.SetmealDish;
 import com.itheima.reggie.service.CategoryService;
+import com.itheima.reggie.service.DishService;
 import com.itheima.reggie.service.SetmealDishService;
 import com.itheima.reggie.service.SetmealService;
 import io.swagger.annotations.Api;
@@ -44,6 +45,9 @@ public class SetmealController {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private DishService dishService;
 
     /**
      * 新增套餐
@@ -221,14 +225,32 @@ public class SetmealController {
     }
 
     /**
-     * 套餐查询全部菜品接口-----------------------------------------（未编码，俺也不知道哪里用到了）
+     * 套餐查询全部菜品接口
      * @param id
      * @return
      */
     @GetMapping("/dish/{id}")
     @ApiOperation(value = "套餐查询全部菜品")
     public R<List<Dish>> findAllDish(@PathVariable Long id){
-        return null;
+        log.info("根据id查询套餐下菜品信息...{}", id);
+
+        //获取套餐关联菜品信息
+        LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.eq(SetmealDish::getSetmealId, id);
+        List<SetmealDish> setmealDishes = setmealDishService.list(queryWrapper);
+
+        //提取关联菜品id
+        List<Long> dishIds = new ArrayList<>();
+        for(SetmealDish setmealDish : setmealDishes){
+            dishIds.add(setmealDish.getDishId());
+        }
+
+        //获取菜品信息
+        LambdaQueryWrapper<Dish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(Dish::getId, dishIds);
+        List<Dish> dishes = dishService.list(lambdaQueryWrapper);
+
+        return R.success(dishes);
     }
 
 }
