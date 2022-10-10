@@ -16,7 +16,7 @@ public class Orders implements Serializable {
     private Long id;
 
     //订单号
-    private String number;
+    private String number;     //这里设置的其实和id一致
 
     //订单状态 1待付款，2待派送，3已派送，4已完成，5已取消
     private Integer status;
