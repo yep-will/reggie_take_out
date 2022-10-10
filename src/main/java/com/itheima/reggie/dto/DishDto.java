@@ -13,7 +13,8 @@ import java.util.List;
 public class DishDto extends Dish {
 
     //菜品对应的口味数据
-    private List<DishFlavor> flavors = new ArrayList<>();
+//    private List<DishFlavor> flavors = new ArrayList<>();  我忘了是我当时看视频敲错了还是怎么样，貌似属性没有这么写的哈哈
+    private List<DishFlavor> flavors;
 
 
     //菜品对应的分类名称

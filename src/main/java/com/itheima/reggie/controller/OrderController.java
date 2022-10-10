@@ -94,7 +94,7 @@ public class OrderController {
 
             //装填订单明细
             List<OrderDetail> orderDetailList = orderDetailService.list(lambdaQueryWrapper);
-            ordersDto.setOrderDetailList(orderDetailList);
+            ordersDto.setOrderDetails(orderDetailList);
 
             return ordersDto;
         }).collect(Collectors.toList());
@@ -113,7 +113,7 @@ public class OrderController {
      */
     @GetMapping("/page")
     @ApiOperation(value = "后台管理订单信息分页查询接口")
-    public R<Page> page(int page, int pageSize, String number, String beginTime, String endTime){
+    public R<Page> page(int page, int pageSize, String number, String beginTime, String endTime){  //也可以写成Date类型
         //构造分页构造器
         Page<Orders> pageInfo = new Page(page, pageSize);
 
