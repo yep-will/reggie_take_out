@@ -95,7 +95,7 @@ public class AddressBookController {
     }
 
     /**
-     * 查询指定用户的全部地址
+     * 查询用户的全部地址
      */
     @GetMapping("/list")
     @ApiOperation(value = "查询指定用户所有地址")
@@ -114,12 +114,13 @@ public class AddressBookController {
 
     /**
      * 地址信息修改
+     *
      * @param addressBook
      * @return
      */
     @PutMapping
     @ApiOperation(value = "地址信息修改接口")
-    public R<String> update(@RequestBody AddressBook addressBook){
+    public R<String> update(@RequestBody AddressBook addressBook) {
         log.info(addressBook.toString());
 
         addressBookService.updateById(addressBook);
@@ -129,12 +130,13 @@ public class AddressBookController {
 
     /**
      * 地址信息删除
+     *
      * @param ids
      * @return
      */
     @DeleteMapping
     @ApiOperation(value = "地址信息删除")
-    public R<String> delete(@RequestParam Long[] ids){
+    public R<String> delete(@RequestParam Long[] ids) {
         log.info("删除的地址id为：{}", ids);
 
         LambdaQueryWrapper<AddressBook> queryWrapper = new LambdaQueryWrapper<>();
@@ -147,23 +149,25 @@ public class AddressBookController {
 
     /**
      * 查询最后更新地址-----------------------------------------（未编码，俺也不知道哪里用到了）
+     *
      * @return
      */
     @GetMapping("/lastUpdate")
     @ApiOperation(value = "查询最后更新地址接口")
-    public R<String> lastUpdate(){
+    public R<String> lastUpdate() {
         return R.success("该接口待完善");
     }
 
     /**
      * 地址分页-----------------------------------------（未测试，俺也不知道哪里用到了）
+     *
      * @param page
      * @param pageSize
      * @return
      */
     @GetMapping("/page")
     @ApiOperation(value = "地址分页接口")
-    public R<Page> page(int page, int pageSize){
+    public R<Page> page(int page, int pageSize) {
         log.info("page = {}, pageSize = {}, name = {}", page, pageSize);
 
         //构造分页构造器

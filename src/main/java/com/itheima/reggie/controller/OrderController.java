@@ -48,26 +48,21 @@ public class OrderController {
 
     /**
      * 用户下单
-     * @param orders
-     * @return
      */
     @PostMapping("/submit")
     @ApiOperation(value = "用户下单接口")
-    public R<String> submit(@RequestBody Orders orders){
-        log.info("订单数据：{}",orders);
+    public R<String> submit(@RequestBody Orders orders) {
+        log.info("订单数据：{}", orders);
         orderService.submit(orders);
         return R.success("下单成功");
     }
 
     /**
      * 用户订单分页查询
-     * @param page
-     * @param pageSize
-     * @return
      */
     @GetMapping("/userPage")
     @ApiOperation(value = "用户订单分页查询接口")
-    public R<Page> userPage(int page, int pageSize){
+    public R<Page> userPage(int page, int pageSize) {
         log.info("page:{}, pageSize:{}", page, pageSize);
 
         //分页构造器对象
@@ -83,7 +78,6 @@ public class OrderController {
         Page<OrdersDto> ordersDtoPage = new Page<>();
         BeanUtils.copyProperties(ordersPage, ordersDtoPage, "records");
 
-
         List<Orders> records = ordersPage.getRecords();    //获取数据进行加工
 
         //对数据加工并存入list中
@@ -98,7 +92,6 @@ public class OrderController {
             lambdaQueryWrapper.in(OrderDetail::getOrderId, item.getId());
             sumNum = orderDetailService.count(lambdaQueryWrapper);
             ordersDto.setSumNum(sumNum);
-
             //装填订单明细
             List<OrderDetail> orderDetailList = orderDetailService.list(lambdaQueryWrapper);
             ordersDto.setOrderDetails(orderDetailList);
@@ -114,13 +107,10 @@ public class OrderController {
 
     /**
      * 后台管理订单信息分页查询
-     * @param page
-     * @param pageSize
-     * @return
      */
     @GetMapping("/page")
     @ApiOperation(value = "后台管理订单信息分页查询接口")
-    public R<Page> page(int page, int pageSize, String number, String beginTime, String endTime){  //也可以写成Date类型
+    public R<Page> page(int page, int pageSize, String number, String beginTime, String endTime) {  //也可以写成Date类型
         //构造分页构造器
         Page<Orders> pageInfo = new Page(page, pageSize);
 
@@ -147,12 +137,10 @@ public class OrderController {
 
     /**
      * 派送订单状态更改
-     * @param orders
-     * @return
      */
     @PutMapping
     @ApiOperation(value = "派送订单状态更改接口")
-    public R<String> updateOrder(@RequestBody Orders orders){
+    public R<String> updateOrder(@RequestBody Orders orders) {
         //构造条件构造器
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         //添加过滤条件
@@ -165,34 +153,30 @@ public class OrderController {
 
     /**
      * 再来一单
-     * @param orders
-     * @return
      */
     @PostMapping("/again")
     @ApiOperation(value = "再来一单接口")
-    public R<String> again(@RequestBody Orders orders){
+    public R<String> again(@RequestBody Orders orders) {
         log.info(orders.toString());
 
-        //构造查询条件
+        // 根据订单id获取订单
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Orders::getId, orders.getId());
-        //根据订单id得到订单元素
         Orders one = orderService.getOne(queryWrapper);
 
+        // 根据订单id获取订单明细集合
         LambdaQueryWrapper<OrderDetail> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        //设置订单明细表中的order_id
         lambdaQueryWrapper.in(OrderDetail::getOrderId, one.getNumber());
-        //根据订单明细表的order_id得到订单明细集合
         List<OrderDetail> orderDetails = orderDetailService.list(lambdaQueryWrapper);
 
-        //通过用户id把原来的购物车给清空
+        // 通过用户id把原来的购物车给清空
         LambdaQueryWrapper<ShoppingCart> shoppingCartLambdaQueryWrapper = new LambdaQueryWrapper<>();
         shoppingCartLambdaQueryWrapper.eq(ShoppingCart::getUserId, BaseContext.getCurrentId());
         shoppingCartService.remove(shoppingCartLambdaQueryWrapper);
 
         //新建购物车集合
         List<ShoppingCart> shoppingCarts = new ArrayList<>();
-        //遍历订单明细集合,将集合中的元素加入购物车集合
+        //遍历订单明细集合,将订单明细重新加入购物车集合
         for (OrderDetail orderDetail : orderDetails) {
             //得到菜品id或套餐id
             Long dishId = orderDetail.getDishId();
@@ -206,7 +190,7 @@ public class OrderController {
             shoppingCart.setNumber(orderDetail.getNumber());
             shoppingCart.setAmount(orderDetail.getAmount());
             shoppingCart.setCreateTime(LocalDateTime.now());
-            if(dishId != null){
+            if (dishId != null) {
                 //订单明细元素中是菜品
                 LambdaQueryWrapper<Dish> dishLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 dishLambdaQueryWrapper.eq(Dish::getId, dishId);
@@ -218,8 +202,7 @@ public class OrderController {
                 shoppingCart.setImage(dishone.getImage());
                 //调用保存购物车方法
                 shoppingCarts.add(shoppingCart);
-            }
-            else if(setmealId != null){
+            } else if (setmealId != null) {
                 //订单明细元素中是套餐
                 LambdaQueryWrapper<Setmeal> setmealLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 setmealLambdaQueryWrapper.eq(Setmeal::getId, setmealId);

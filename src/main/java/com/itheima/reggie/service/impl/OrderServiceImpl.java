@@ -37,36 +37,40 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
 
     /**
      * 用户下单
-     * @param orders
      */
-    @Transactional   //事务控制
+    @Transactional
     public void submit(Orders orders) {
-        //获得当前用户id
+        // 1.获得当前用户id
         Long userId = BaseContext.getCurrentId();
 
-        //查询当前用户的购物车数据
+        // 2.查询当前用户的购物车数据
         LambdaQueryWrapper<ShoppingCart> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ShoppingCart::getUserId,userId);
+        wrapper.eq(ShoppingCart::getUserId, userId);
         List<ShoppingCart> shoppingCarts = shoppingCartService.list(wrapper);
-
-        if(shoppingCarts == null || shoppingCarts.size() == 0){
+        if (shoppingCarts == null || shoppingCarts.size() == 0) {
             throw new CustomException("购物车为空，赶快去挑选你喜爱的商品吧");
         }
 
-        //查询用户数据
+        // 3.查询用户数据
         User user = userService.getById(userId);
 
-        //查询地址数据
+        // 4.查询地址数据
         Long addressBookId = orders.getAddressBookId();
         AddressBook addressBook = addressBookService.getById(addressBookId);
-        if(addressBook == null){
-            throw new CustomException("用户地址信息有误，不能下单");   //一般不会有错，保险起见
+        if (addressBook == null) {
+            // 一般不会有错，保险起见
+            throw new CustomException("用户地址信息有误，不能下单");
         }
 
-        long orderId = IdWorker.getId();    //订单号mybatis-plus提供
+        // 订单表的订单号由 mybatis-plus 框架提供
+        long orderId = IdWorker.getId();
 
-        AtomicInteger amount = new AtomicInteger(0);    //计算总金额，可以保证多线程的操作也是安全的
+        // 根据购物车数据计算总金额
+        // AtomicInteger是一种原子操作类，可以保证整数类型变量的原子性操作，
+        // 即在多线程环境下，对整数变量进行加、减、赋值等操作是线程安全的。
+        AtomicInteger amount = new AtomicInteger(0);
 
+        // 订单明细列表，为结算的每个购物车生成一个订单明细
         List<OrderDetail> orderDetails = shoppingCarts.stream().map((item) -> {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrderId(orderId);
@@ -81,6 +85,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
             return orderDetail;
         }).collect(Collectors.toList());
 
+        // 设置订单
         orders.setId(orderId);
         orders.setOrderTime(LocalDateTime.now());
         orders.setCheckoutTime(LocalDateTime.now());
@@ -96,13 +101,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
                 + (addressBook.getDistrictName() == null ? "" : addressBook.getDistrictName())
                 + (addressBook.getDetail() == null ? "" : addressBook.getDetail()));
 
-        //向订单表插入数据，一条数据
+        // 1.向订单表插入数据，一条数据
         this.save(orders);
-
-        //向订单明细表插入数据，多条数据
+        // 2.向订单明细表插入数据，多条数据
         orderDetailService.saveBatch(orderDetails);
-
-        //清空购物车数据
+        // 3.清空购物车数据
         shoppingCartService.remove(wrapper);
     }
 }

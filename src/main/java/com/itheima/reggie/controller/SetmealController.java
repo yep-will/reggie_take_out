@@ -150,7 +150,6 @@ public class SetmealController {
 
         for(Long id : ids){
             Setmeal setmeal =  setmealService.getById(id);
-            log.info("套餐：{}", setmeal);
             setmeal.setStatus(status);
             flag = setmeal.getStatus();
             setmealService.updateById(setmeal);

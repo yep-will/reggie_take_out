@@ -28,42 +28,37 @@ public class ShoppingCartController {
 
     /**
      * 添加购物车
-     * @param shoppingCart
-     * @return
      */
     @PostMapping("/add")
     @ApiOperation(value = "添加购物车")
-    public R<ShoppingCart> add(@RequestBody ShoppingCart shoppingCart){
+    public R<ShoppingCart> add(@RequestBody ShoppingCart shoppingCart) {
         log.info("购物车数据:{}", shoppingCart);
 
-        //设置用户id，指定当前是哪个用户的购物车数据
+        // 获取用户id，指定当前是哪个用户的购物车数据
         Long currentId = BaseContext.getCurrentId();   //通过session方式获得也可以
         shoppingCart.setUserId(currentId);
-
-        //添加条件：设置当前用户id
         LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ShoppingCart::getUserId, currentId);
-
-        if(null != shoppingCart.getDishId()){
-            //添加到购物车的是菜品
+        if (null != shoppingCart.getDishId()) {
+            // 添加到购物车的是菜品
             queryWrapper.eq(ShoppingCart::getDishId, shoppingCart.getDishId());
-        }else if (null != shoppingCart.getSetmealId()){
-            //添加到购物车的是套餐
+        } else if (null != shoppingCart.getSetmealId()) {
+            // 添加到购物车的是套餐
             queryWrapper.eq(ShoppingCart::getSetmealId, shoppingCart.getSetmealId());
         }
 
-        //查询当前菜品或者套餐是否在购物车中（只看userid和setmealid即可）
-        //SQL:select * from shopping_cart where user_id = ? and dish_id/setmeal_id = ?
+        // 查询当前菜品或者套餐是否在购物车中（只看userid和setmealid即可）
+        // SQL:select * from shopping_cart where user_id = ? and dish_id/setmeal_id = ?
         ShoppingCart cartServiceOne = shoppingCartService.getOne(queryWrapper);
 
-        if(cartServiceOne != null){
-            //如果已经存在，就在原来数量基础上加一
+        if (cartServiceOne != null) {
+            // 如果已经存在，就在原来数量基础上加一
             Integer number = cartServiceOne.getNumber();
             cartServiceOne.setNumber(number + 1);
             cartServiceOne.setCreateTime(LocalDateTime.now());   //更新入库时间
             shoppingCartService.updateById(cartServiceOne);
-        }else{
-            //如果不存在，则添加到购物车，数量默认就是一
+        } else {
+            // 如果不存在，则添加到购物车，数量默认就是一
             shoppingCart.setNumber(1);
             shoppingCart.setCreateTime(LocalDateTime.now());   //手动添加入库时间
             shoppingCartService.save(shoppingCart);
@@ -75,12 +70,10 @@ public class ShoppingCartController {
 
     /**
      * 购物车数量减一
-     * @param shoppingCart
-     * @return
      */
     @PostMapping("/sub")
     @ApiOperation(value = "减少购物车接口")
-    public R<ShoppingCart> sub(@RequestBody ShoppingCart shoppingCart){
+    public R<ShoppingCart> sub(@RequestBody ShoppingCart shoppingCart) {
         log.info("购物车数据:{}", shoppingCart);
 
         //设置用户id，指定当前是哪个用户的购物车数据
@@ -91,10 +84,10 @@ public class ShoppingCartController {
         LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ShoppingCart::getUserId, currentId);
 
-        if(null != shoppingCart.getDishId()){
+        if (null != shoppingCart.getDishId()) {
             //购物车的是菜品
             queryWrapper.eq(ShoppingCart::getDishId, shoppingCart.getDishId());
-        }else if (null != shoppingCart.getSetmealId()){
+        } else if (null != shoppingCart.getSetmealId()) {
             //购物车的是套餐
             queryWrapper.eq(ShoppingCart::getSetmealId, shoppingCart.getSetmealId());
         }
@@ -103,8 +96,8 @@ public class ShoppingCartController {
         //SQL:select * from shopping_cart where user_id = ? and dish_id/setmeal_id = ?
         ShoppingCart cartServiceOne = shoppingCartService.getOne(queryWrapper);
 
-        if(cartServiceOne != null){
-            if (cartServiceOne.getNumber() == 1){
+        if (cartServiceOne != null) {
+            if (cartServiceOne.getNumber() == 1) {
                 //如果数量是1，再减一就直接将该购物车删除
                 shoppingCartService.remove(queryWrapper);
                 return R.success(shoppingCart);
@@ -114,9 +107,8 @@ public class ShoppingCartController {
             cartServiceOne.setNumber(number - 1);
             cartServiceOne.setCreateTime(LocalDateTime.now());   //更新入库时间
             shoppingCartService.updateById(cartServiceOne);
-        }else{
+        } else {
             //如果不存在，直接返回
-            cartServiceOne = shoppingCart;
             return R.error("暂未添加至购物车");
         }
 
@@ -125,15 +117,15 @@ public class ShoppingCartController {
 
     /**
      * 查看购物车
-     * @return
      */
     @GetMapping("/list")
     @ApiOperation(value = "查看购物车列表接口")
-    public R<List<ShoppingCart>> list(){
+    public R<List<ShoppingCart>> list() {
         log.info("查看购物车...");
 
         LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ShoppingCart::getUserId,BaseContext.getCurrentId());
+        // 获取当前用户id
+        queryWrapper.eq(ShoppingCart::getUserId, BaseContext.getCurrentId());
         queryWrapper.orderByAsc(ShoppingCart::getCreateTime);   //时间升序
 
         List<ShoppingCart> list = shoppingCartService.list(queryWrapper);
@@ -143,14 +135,13 @@ public class ShoppingCartController {
 
     /**
      * 清空购物车
-     * @return
      */
     @DeleteMapping("/clean")
     @ApiOperation(value = "清空购物车接口")
-    public R<String> clean(){
+    public R<String> clean() {
         //SQL:delete from shopping_cart where user_id = ?
         LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ShoppingCart::getUserId,BaseContext.getCurrentId());
+        queryWrapper.eq(ShoppingCart::getUserId, BaseContext.getCurrentId());
 
         shoppingCartService.remove(queryWrapper);
 

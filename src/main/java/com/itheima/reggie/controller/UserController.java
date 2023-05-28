@@ -83,15 +83,15 @@ public class UserController {
         //获取验证码
         String code = map.get("code").toString();
 
-        //从Session中获取保存的验证码
+        //从Session中获取保存的正确验证码
         //Object codeInSession = session.getAttribute(phone);
 
-        //从redis中获取缓存的验证码
-        Object codeInSession = redisTemplate.opsForValue().get(phone);
+        //从redis中获取缓存的正确验证码
+        Object codeInRedis = redisTemplate.opsForValue().get(phone);
 
         //进行验证码的比对（页面提交的验证码和Session中保存的验证码比对）
-        if (codeInSession != null && codeInSession.equals(code)) {
-            //如果能够比对成功，说明登录成功
+        if (codeInRedis != null && codeInRedis.equals(code)) {
+            //如果能够比对成功，说明登录成功（手机号和验证码都正确）
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(User::getPhone, phone);
 
@@ -103,9 +103,11 @@ public class UserController {
                 user.setStatus(1);
                 userService.save(user);
             }
-            session.setAttribute("user", user.getId());   //过滤器会校验
+            // 将该用户id存进该线程的session中，后续的请求过滤器会将userId从session中取出
+            // 并保存到 BaseContext 类中的 ThreadLocal 中。
+            session.setAttribute("user", user.getId());
 
-            //如果用户登录成功，删除redis中缓存的验证码
+            //用户登录成功，删除redis中缓存的验证码
             redisTemplate.delete(phone);
 
             return R.success(user);
@@ -122,7 +124,7 @@ public class UserController {
     @PostMapping("/loginout")
     @ApiOperation(value = "移动端用户登出接口")
     public R<String> loginout(HttpSession httpSession) {
-        //清理Session保存的当前登录员工的id、
+        // 清理Session保存的当前登录用户id
         httpSession.removeAttribute("user");
         return R.success("退出成功");
     }

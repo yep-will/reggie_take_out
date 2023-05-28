@@ -26,23 +26,20 @@ import java.util.UUID;
 @Slf4j
 @Api(tags = "公共接口")
 public class CommonController {
+
     @Value("${reggie.path}")
     private String bashPath;
 
     /**
-     * 文件上传
-     * @param file
-     * @return
+     * 文件上传（文件上传以后马上把文件名回传给客户端，客户端以文件名为参数又马上发出请求回显图片）
      */
     @PostMapping("/upload")
     @ApiOperation(value = "文件上传接口")
     public R<String> upload(MultipartFile file){  //参数名file不可变
-        //file是一个临时文件，需要转存到指定位置，否则本次请求完成后临时文件会删除
-        log.info(file.toString());
-
-        //原始文件名（上传时的文件名）
+        // file是一个临时文件，需要转存到指定位置，否则本次请求完成后临时文件会删除
+        // 获取原始文件名（上传时的文件名）的后缀
         String originalFilename = file.getOriginalFilename();
-        String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));  //suffix：后缀
+        String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
 
         //使用UUID重新生成文件名，防止文件名称重复造成文件覆盖
         String fileName = UUID.randomUUID().toString() + suffix;
@@ -66,21 +63,19 @@ public class CommonController {
     }
 
     /**
-     * 文件下载（文件上传以后马上把文件名回传给客户端，客户端以文件名为参数又马上发出请求回显图片）
-     * @param name
-     * @param response
+     * 文件下载
      */
     @GetMapping("/download")
     @ApiOperation(value = "文件下载接口")
     public void download(String name, HttpServletResponse response){
         try {
-            //输入流，通过输入流读取文件内容
+            // 通过输入流读取文件内容
             FileInputStream fileInputStream = new FileInputStream(new File(bashPath + name));
 
-            //输出流，通过输出流将文件写回浏览器，在浏览器展示图片了
+            // 通过输出流将文件写回浏览器，在浏览器展示图片
             ServletOutputStream outputStream = response.getOutputStream();
 
-            //设置响应回去的文件类型
+            // 设置响应回去的文件类型
             response.setContentType("image/jpeg");
 
             int len = 0;
